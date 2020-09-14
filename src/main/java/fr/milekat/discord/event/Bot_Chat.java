@@ -6,6 +6,7 @@ import fr.milekat.discord.utils.ChatColor;
 import fr.milekat.discord.utils.DateMilekat;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -14,6 +15,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.UUID;
+
+import static fr.milekat.discord.Main.*;
 
 public class Bot_Chat extends ListenerAdapter {
     private final JDA api = Main.getBot();
@@ -42,29 +45,36 @@ public class Bot_Chat extends ListenerAdapter {
                     e.printStackTrace();
                 }
                 // Envoi REDIS
-                JedisPub.sendRedis("new_msg:" + id);
+                JedisPub.sendRedis("new_msg#:#" + id);
             }
         } if (event.getChannel().getType().equals(ChannelType.PRIVATE)) {
-            UUID uuid = Main.profilHashMap.get(event.getAuthor().getIdLong()).getUuid();
-            if (Main.profilHashMap.get(event.getAuthor().getIdLong()).isMute()) {
-                event.getAuthor().openPrivateChannel().complete().sendMessage(
-                        "Impossible d'envoyer un message, vous êtes mute.").queue();
-                return;
-            }
             // Récupération commande
             String[] message = event.getMessage().getContentRaw().split(" ");
             if (message[0].equalsIgnoreCase("msg") && message.length < 3) {
-                event.getChannel().sendMessage("Merci d'utiliser msg <joueur> <message> pour envoyer un msg privé.").queue();
+                event.getChannel().sendMessage("Merci d'utiliser **msg <joueur> <message>** pour envoyer un msg privé.")
+                        .queue();
                 return;
-            } else if (!message[0].equalsIgnoreCase("msg")) return;
+            } else if (!commandes.contains(message[0])) {
+                event.getChannel().sendMessage("Commande inconnue").queue();
+                sendHelp(event.getChannel());
+                return;
+            }
+            if (Main.profilHashMap.get(event.getAuthor().getIdLong()).isMute()) {
+                event.getAuthor().openPrivateChannel().complete().sendMessage(
+                        "Impossible d'envoyer un message, vous êtes mute.").queue();
+                debug(event.getAuthor().getAsTag() + " tentative de MP alors que mute.");
+                return;
+            }
             Connection sql = Main.getSqlConnect().getConnection();
+            debug("Nouveau mp de " + event.getAuthor().getAsTag());
             try {
-                PreparedStatement q = sql.prepareStatement(
-                        "SELECT `uuid` FROM `player` WHERE SOUNDEX(`name`) = SOUNDEX('" + message[1] + "')");
+                PreparedStatement q = sql.prepareStatement("SELECT `uuid` FROM `" + Main.SQLPREFIX +
+                        "player` WHERE SOUNDEX(`name`) = SOUNDEX('" + message[1] + "')");
                 q.execute();
                 if (!q.getResultSet().last()) {
                     event.getChannel().sendMessage("Le joueur est introuvable.").queue();
                     q.close();
+                    debug("Destinataire introuvable.");
                     return;
                 }
                 q.getResultSet().last();
@@ -74,6 +84,11 @@ public class Bot_Chat extends ListenerAdapter {
                         sb.append(loop);
                         sb.append(" ");
                     }
+                }
+                UUID uuid = Main.profilHashMap.getOrDefault(event.getAuthor().getIdLong(),null).getUuid();
+                if (uuid==null) {
+                    log("Erreur MP, le profil n'existe pas (UUID NULL).");
+                    return;
                 }
                 // Injection SQL
                 int id = insertSQLNewPrivate(uuid, UUID.fromString(q.getResultSet().getString("uuid")),
@@ -87,7 +102,7 @@ public class Bot_Chat extends ListenerAdapter {
                     e.printStackTrace();
                 }
                 // Envoi REDIS
-                JedisPub.sendRedis("new_mp:" + id);
+                JedisPub.sendRedis("new_mp#:#" + id);
             } catch (SQLException e) {
                 Main.log("Impossible d'envoyer le message-3 sur Discord.");
                 e.printStackTrace();
@@ -247,4 +262,12 @@ public class Bot_Chat extends ListenerAdapter {
         }
         return null;
     }
+
+    private void sendHelp(MessageChannel channel) {
+        TextChannel rechercheteam = api.getTextChannelById(712719477414035536L);
+        channel.sendMessage("Pour envoyer un MP sur minecraft **msg <joueur> <message>**.").queue();
+        channel.sendMessage("Pour créer une équipe: **team create <nom de team>** (Action définitive).").queue();
+        assert rechercheteam != null;
+        channel.sendMessage("Pour inviter un joueur: **team invite <@Mention>** dans " +
+                rechercheteam.getAsMention() + " (Attention vous partagerez tout !)").queue();    }
 }
