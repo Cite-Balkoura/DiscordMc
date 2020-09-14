@@ -9,7 +9,10 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.exceptions.ContextException;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.RestAction;
 
 import java.awt.*;
 import java.sql.Connection;
@@ -27,6 +30,7 @@ public class Inscription extends ListenerAdapter {
     private final Role teamrole = api.getRoleById(712716246432350208L);
     private final TextChannel validationchannel = api.getTextChannelById(713533614524203079L);
     private final TextChannel rechercheteam = api.getTextChannelById(712719477414035536L);
+    private final TextChannel accueil = api.getTextChannelById(554084957459578890L);
     private final long reactmsgid = 713751748732387338L;
 
     @Override
@@ -37,23 +41,30 @@ public class Inscription extends ListenerAdapter {
                 if (event.getMessageIdLong() == reactmsgid) {
                     if (!Main.regEnCours.contains(user)) {
                         if (event.getReactionEmote().getAsCodepoints().equalsIgnoreCase("U+2705")) {
-                            user.openPrivateChannel().queue(dm -> {
-                                Main.waitbot.add(user);
-                                Main.regEnCours.add(user);
-                                Main.registerstep.put(user, 0);
-                                log("L'utilisateur: " + user.getAsTag() + " débute l'inscription");
-                                dm.sendMessage("Bonjour, merci d'avoir accepté notre règlement.").queue();
-                                dm.sendTyping().queue();
-                                sleep(2000);
-                                dm.sendMessage("Voici le formulaire à suivre pour soumettre ton inscription:").queue();
-                                dm.sendTyping().queue();
-                                sleep(3000);
-                                dm.sendMessage("1) Merci de renseigner ton pseudo minecraft (No Crack) actuel " +
-                                        "(S'il change d'ici la cité ce n'est pas un souci):").queue();
-                                Main.registerstep.put(user, 1);
-                                Main.waitbot.remove(user);
-                                debug("En attente du pseudo de " + user.getAsTag());
-                            });
+                            try {
+                                user.openPrivateChannel().queue(dm -> {
+                                    Main.waitbot.add(user);
+                                    Main.regEnCours.add(user);
+                                    Main.registerstep.put(user, 0);
+                                    log("L'utilisateur: " + user.getAsTag() + " débute l'inscription");
+                                    dm.sendMessage("Bonjour, merci d'avoir accepté notre règlement.").queue();
+                                    dm.sendTyping().queue();
+                                    sleep(2000);
+                                    dm.sendMessage("Voici le formulaire à suivre pour soumettre ton inscription:").queue();
+                                    dm.sendTyping().queue();
+                                    sleep(3000);
+                                    dm.sendMessage("1) Merci de renseigner ton pseudo minecraft (No Crack) actuel " +
+                                            "(S'il change d'ici la cité ce n'est pas un souci):").queue();
+                                    Main.registerstep.put(user, 1);
+                                    Main.waitbot.remove(user);
+                                    debug("[" + user.getAsTag() + "] En attente du pseudo..");
+                                });
+                            } catch (ErrorResponseException ignore) {
+                                log("[" + user.getAsTag() + "] semble ne pas autoriser les MP.");
+                                assert accueil != null;
+                                accueil.sendMessage(user.getAsMention() + "Je ne parviens pas à t'envoyer de MP.").queue();
+                                accueil.sendMessage("Tu bloque probablement les messages privés, envois moi un MP.").queue();
+                            }
                         }
                     } else {
                         user.openPrivateChannel().queue(dm -> dm.sendMessage("Tu es déjà en cours d'incription..").queue());
@@ -61,7 +72,7 @@ public class Inscription extends ListenerAdapter {
                 } else if (event.getChannel().getType().equals(ChannelType.PRIVATE)) {
                     PrivateChannel dm = event.getPrivateChannel();
                     Main.waitbot.add(user);
-                    debug("Nouvelle émote dm de " + user.getAsTag() + ", émote: " + event.getReactionEmote().getAsCodepoints());
+                    //debug("Nouvelle émote dm de " + user.getAsTag() + ", émote: " + event.getReactionEmote().getAsCodepoints());
                     if (Main.registerstep.getOrDefault(user,0).equals(2)) {
                         if (event.getReactionEmote().getAsCodepoints().equalsIgnoreCase("U+2705")) {
                             Main.registerstep.put(user, 0);
@@ -75,14 +86,15 @@ public class Inscription extends ListenerAdapter {
                             dm.sendMessage("2) Pour finir, petite question de départagement (Répondre en 1 seul " +
                                     "message, max 400 chars), quel sont t'es objetifs sur une cité ?").queue();
                             Main.registerstep.put(user, 3);
-                            debug(user.getAsTag() + " valide l'UUID: " + reguuid.getOrDefault(user,null));
+                            debug("[" + user.getAsTag() + "] valide l'UUID: '" + reguuid.getOrDefault(user,null) + "'");
                         } else {
                             Main.registerstep.put(user, 0);
                             dm.sendTyping().queue();
                             sleep(500);
                             dm.sendMessage("Ouups ! Tu peux ré-essayer.").queue();
                             Main.registerstep.put(user, 1);
-                            debug("L'utilisateur " + user.getAsTag() + " ne valide pas l'UUID: " + reguuid.getOrDefault(user,null));
+                            debug("[" + user.getAsTag() + "] ne valide pas l'UUID: '" +
+                                    reguuid.getOrDefault(user,null) + "'");
                         }
                     } else if (Main.registerstep.getOrDefault(user,0).equals(4)) {
                         if (event.getReactionEmote().getAsCodepoints().equalsIgnoreCase("U+2705")) {
@@ -96,7 +108,7 @@ public class Inscription extends ListenerAdapter {
                             dm.sendMessage("Si vous n'avez pas de réponse sous " +
                                     "72h c'est que votre demande est refusée.").queue();
                             server.retrieveMember(user).queue(member -> newCandid(member, user));
-                            debug("L'utilisateur " + user.getAsTag() + " a validé ses informations, envoi au staff..");
+                            debug("[" + user.getAsTag() + "] valide ses informations, envoi au staff..");
                         } else if (event.getReactionEmote().getAsCodepoints().equalsIgnoreCase("U+274C")) {
                             Main.registerstep.put(user, 0);
                             dm.sendTyping().queue();
@@ -107,7 +119,7 @@ public class Inscription extends ListenerAdapter {
                             dm.sendMessage("1) Merci de renseigner ton pseudo minecraft (No Crack) actuel " +
                                     "(S'il change d'ici la cité ce n'est pas un souci):").queue();
                             Main.registerstep.put(user, 1);
-                            debug("L'utilisateur " + user.getAsTag() + "  ne valide pas ses infos, retry.");
+                            debug("[" + user.getAsTag() + "] ne valide pas ses infos, retry.");
                         }
                     }
                     Main.waitbot.remove(user);
@@ -126,10 +138,10 @@ public class Inscription extends ListenerAdapter {
                                     team.getName() + ".").queue();
                             event.getPrivateChannel().sendMessage("Tu peux maintenant inviter d'autres membres " +
                                     "dans cette équipe.").queue();
-                            debug("En attente des équipiers de " + user.getAsTag());
+                            debug("[" + user.getAsTag() + "] a rejoins l'équipe '" + team.getName() + "'");
                         } else {
                             event.getPrivateChannel().sendMessage("Désolé, l'équipe est pleine.").queue();
-                            debug("L'équipe " + team.getName() + " est pleine!");
+                            debug("[" + user.getAsTag() + "] L'équipe '" + team.getName() + "' est pleine!");
                         }
                     });
                 }
@@ -172,9 +184,9 @@ public class Inscription extends ListenerAdapter {
                                 Main.reguuid.remove(member.getUser());
                                 Main.regmotivations.remove(member.getUser());
                                 Main.regEnCours.remove(user);
-                                debug("Le staff valide " + user.getAsTag());
+                                debug("[" + member.getUser().getAsTag() + "] Le staff valide la candidature");
                             } catch (SQLException throwables) {
-                                debug("Erreur SQL suite à la validation de " + user.getAsTag());
+                                debug("[" + member.getUser().getAsTag() + "] Erreur SQL suite à la validation");
                                 throwables.printStackTrace();
                             }
                         });
@@ -200,15 +212,21 @@ public class Inscription extends ListenerAdapter {
                         if (event.getMessage().getContentRaw().split(" ").length != 1) {
                             channel.sendMessage("Désolé mais je n'ai pas bien compris, " +
                                     "tu peux ré-essayer (Pseudo sans espace).").queue();
-                            debug(user.getAsTag() + " pseudo rentré avec espaces ?");
+                            debug("[" + user.getAsTag() + "] pseudo invalide '" + event.getMessage().getContentRaw() + "'");
                             return;
                         }
                         String uuid = MojangNames.getUuid(event.getMessage().getContentRaw());
+                        if (uuid.equalsIgnoreCase("invalid name")) {
+                            channel.sendMessage("Désolé mais le pseudo minecraft n'est pas reconnu, " +
+                                    "tu peux ré-essayer (Pseudo sans espace).").queue();
+                            debug("[" + user.getAsTag() + "] pseudo invalide '" + event.getMessage().getContentRaw() + "'");
+                            return;
+                        }
                         if (Main.uuidUserHashMap.containsKey(UUID.fromString(uuid))) {
                             channel.sendMessage("Désolé mais cet utilisateur est déjà enregistré.").queue();
                             channel.sendMessage("Si tu es bien cet utilisateur, contact le staff.").queue();
                             channel.sendMessage("Si non, recommence avec le bon pseudo.").queue();
-                            debug(user.getAsTag() + " pseudo " + event.getMessage().getContentRaw() + " déjà reg.");
+                            debug("[" + user.getAsTag() + "] pseudo '" + event.getMessage().getContentRaw() + "' déjà reg.");
                             return;
                         }
                         EmbedBuilder skin = new EmbedBuilder();
@@ -222,13 +240,15 @@ public class Inscription extends ListenerAdapter {
                         });
                         Main.registerstep.put(user, 2);
                         Main.reguuid.put(user, UUID.fromString(uuid));
-                        debug("En attente de la validation du skin de " + user.getAsTag());
+                        debug("[" + user.getAsTag() + "] En attente de la validation du skin, pseudo Mc '" +
+                                event.getMessage().getContentRaw() + "'");
                         break;
                     }
                     case 3: {
                         if (event.getMessage().getContentRaw().length() > 400) {
                             channel.sendMessage("Tu m'as l'air un peu trop motivé, essaies de synthétiser !").queue();
-                            debug(user.getAsTag() + " msg motivation trop long !");
+                            debug("[" + user.getAsTag() + "] msg motivation trop long ! '" +
+                                    event.getMessage().getContentRaw().length() + "'");
                             return;
                         }
                         Main.registerstep.put(user, 0);
@@ -254,7 +274,7 @@ public class Inscription extends ListenerAdapter {
                         Main.regmotivations.put(user, event.getMessage().getContentRaw());
                         Main.registerstep.put(user, 4);
                         Main.waitbot.remove(user);
-                        debug(user.getAsTag() + " attente validation des infos.");
+                        debug("[" + user.getAsTag() + "] attente validation des infos.");
                         break;
                     }
                 }
@@ -264,7 +284,7 @@ public class Inscription extends ListenerAdapter {
                 if (message.length != 3) {
                     event.getChannel().sendMessage("Merci d'utiliser team create <nom de team> pour créer une" +
                             " nouvelle équipe, et la rejoindre.").queue();
-                    debug(user.getAsTag() + " commande création team erreur.");
+                    debug("[" + user.getAsTag() + "] commande création team erreur.");
                     return;
                 }
                 if (!message[0].equalsIgnoreCase("team")) return;
@@ -298,10 +318,10 @@ public class Inscription extends ListenerAdapter {
                                 "jouer le classement Solo, soit inviter d'autres membres sans équipe pour jouer le " +
                                 "classement Duo/Trio ou Équipe (6 maxi).").queue();
                         channel.sendMessage("Ton grade sera mis à jour d'ici quelques instants.").queue();
-                        log(user.getAsTag() + " créé l'équipe" + message[2]);
+                        log("[" + user.getAsTag() + "] créé l'équipe" + message[2]);
                     } else {
                         channel.sendMessage("Désolé, cette équipe, n'est pas disponible.").queue();
-                        debug(user.getAsTag() + " a tenté de créé l'équipe " + message[2] + " mais elle existe déjà.");
+                        debug("[" + user.getAsTag() + "] a tenté de créé l'équipe " + message[2] + " mais elle existe déjà.");
                     }
                     q.close();
                     Main.waitbot.remove(user);
@@ -317,7 +337,6 @@ public class Inscription extends ListenerAdapter {
             String[] message = event.getMessage().getContentRaw().split(" ");
             if (message.length != 3 || !message[0].equalsIgnoreCase("team") ||
                     !message[1].equalsIgnoreCase("invite")){
-                event.getMessage().delete().queue();
                 return;
             }
             if (Main.teams.get(Main.profilHashMap.get(user.getIdLong()).getTeam()).getSize()>5) {
@@ -346,13 +365,14 @@ public class Inscription extends ListenerAdapter {
                         accepte.addReaction("❌").queue();
                     });
                 });
-                debug(user.getAsTag() + " invite le joueur " + target.getUser().getAsTag() + " à rejoindre son équipe.");
+                debug("[" + user.getAsTag() + "] invite le joueur '" + target.getUser().getAsTag() + "' à rejoindre son équipe.");
             } else {
                 api.openPrivateChannelById(member.getId()).queue(dm->
                         dm.sendMessage("Joueur introuvable / ne recherche pas d'équipe.").queue());
                 event.getMessage().delete().queue();
-                debug(user.getAsTag() + " invite x mais il ne cherche pas d'équipe.");
+                debug("[" + user.getAsTag() + "] invite x mais il ne cherche pas d'équipe.");
             }
+            event.getMessage().delete().queue();
         }
     }
 
