@@ -43,13 +43,19 @@ public class Main {
     public static boolean debugMode;
     public static boolean enableBackups;
 
+    public static ArrayList<String> commandes = new ArrayList<>();
+
     public static Jedis jedisPub;
     private static Jedis jedisSub;
     private static JedisSub subscriber;
 
     public static void main(String[] args) throws Exception {
-        debugMode = false;
+        debugMode = true;
+        log("Débugs activés '/debug' pour désactiver");
         enableBackups = true;
+        log("Backups activés '/backup' pour désactiver");
+        commandes.add("team");
+        commandes.add("msg");
         // Discord
         api = JDABuilder.createDefault("NDg3MjcxODM0ODMyNzMyMTYx.XpcgLg.SmzvIo3KZhK4xCZhawYX8HPVr3o").build().awaitReady();
         api.getPresence().setPresence(OnlineStatus.ONLINE,Activity.watching("web.cite-balkoura.fr"));
@@ -140,7 +146,7 @@ public class Main {
     }
 
     public static void debug(String msg) {
-        if (debugMode) log(msg);
+        if (debugMode) log("[DEBUG] " + msg);
     }
 
     public static void stopSequence() {
