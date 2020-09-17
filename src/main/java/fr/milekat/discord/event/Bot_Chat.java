@@ -147,10 +147,16 @@ public class Bot_Chat extends ListenerAdapter {
         }
         q.getResultSet().last();
         int type = q.getResultSet().getInt("msg_type");
-        if (type==1 || type==3 || type==4) {
+        if (type==1 || type==3) {
             sendChatDiscord("**" + q.getResultSet().getString("prefix") +
                     q.getResultSet().getString("name") + " »** " +
                     ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&',q.getResultSet().getString("msg"))));
+        } else if (type==4) {
+            sendChatDiscord("**" + q.getResultSet().getString("prefix") +
+                    q.getResultSet().getString("name") + " »** " +
+                    ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&',
+                            q.getResultSet().getString("msg").replaceAll("%nl%", System.lineSeparator()))));
+
         }
         q.close();
     }

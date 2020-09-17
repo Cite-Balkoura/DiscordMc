@@ -148,7 +148,7 @@ public class Inscription extends ListenerAdapter {
             } else if (event.getChannel().equals(validationchannel)) {
                 event.getTextChannel().retrieveMessageById(event.getMessageId()).queue(message -> {
                     if (message.getEmbeds().size()==0) return;
-                    if (!message.getReactions().get(0).hasCount() || message.getReactions().get(0).getCount() < 5) return;
+                    if (!message.getReactions().get(0).hasCount() || message.getReactions().get(0).getCount() != 5) return;
                     MessageEmbed embed = message.getEmbeds().get(0);
                     if (embed==null || embed.getFooter()==null || embed.getFooter().getText()==null) return;
                     if (event.getReactionEmote().getAsCodepoints().equalsIgnoreCase("U+2705")) {
@@ -187,7 +187,11 @@ public class Inscription extends ListenerAdapter {
                                 debug("[" + member.getUser().getAsTag() + "] Le staff valide la candidature");
                             } catch (SQLException throwables) {
                                 debug("[" + member.getUser().getAsTag() + "] Erreur SQL suite à la validation");
-                                throwables.printStackTrace();
+                                if (throwables.getMessage().contains("Duplicate entry")) {
+                                    debug("[" + member.getUser().getAsTag() + "] Utilisateur déjà validé");
+                                } else {
+                                    throwables.printStackTrace();
+                                }
                             }
                         });
                     } else {
