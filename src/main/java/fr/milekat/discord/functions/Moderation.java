@@ -24,6 +24,7 @@ public class Moderation {
      *      Log de report
      */
     public void report(String target, String sender, String raison) {
+        assert server != null;
         server.retrieveMemberById(target).queue(cible -> sendLogDiscord("Report", cible, sender, null, raison));
     }
 
@@ -31,6 +32,7 @@ public class Moderation {
      *      Log de ban
      */
     public void ban(String target, String modo, String duree, String raison) {
+        assert server != null;
         server.retrieveMemberById(target).queue(cible -> {
             if (!modo.equalsIgnoreCase("console")) {
                 server.retrieveMemberById(modo).queue(member ->
@@ -45,8 +47,11 @@ public class Moderation {
     private void setBanrole(Member cible, String mods, String modo, String duree, String raison) {
         String chname = "ban-" + cible.getEffectiveName().toLowerCase().replaceAll(" ","-");
         chname = chname.replaceAll("[^a-zA-Z0-9-]", "");
+        assert banrole != null;
+        assert server != null;
         server.addRoleToMember(cible, banrole).queue();
         TextChannel banchannel = null;
+        assert bancategory != null;
         for (TextChannel channel : bancategory.getTextChannels()) {
             if (channel.getName().equalsIgnoreCase(chname)) {
                 banchannel = channel;
@@ -60,14 +65,21 @@ public class Moderation {
         }
         sendLogDiscord("Ban",cible,modo,duree,raison);
         List<Role> roles = cible.getRoles();
-        if (roles.contains(teamrole)) server.removeRoleFromMember(cible,teamrole).queue();
-        if (roles.contains(validrole)) server.removeRoleFromMember(cible,validrole).queue();
+        if (roles.contains(teamrole)) {
+            assert teamrole != null;
+            server.removeRoleFromMember(cible,teamrole).queue();
+        }
+        if (roles.contains(validrole)) {
+            assert validrole != null;
+            server.removeRoleFromMember(cible,validrole).queue();
+        }
     }
 
     private void setBanchannel(TextChannel banchannel, Member cible, String mods, String duree, String raison) {
         try {
             banchannel.getPermissionOverrides().clear();
         } catch (UnsupportedOperationException ignored) {}
+        assert bancategory != null;
         banchannel.getManager().sync(bancategory).queue();
         banchannel.getManager().setTopic("Canal privé suite au bannissement de " + cible.getEffectiveName() + ", par " + mods).queue();
         banchannel.createPermissionOverride(cible).clear().setAllow(Permission.VIEW_CHANNEL).queue();
@@ -80,9 +92,11 @@ public class Moderation {
      *      Log d'unban
      */
     public void unban(String target, String modo, String raison) {
+        assert server != null;
         server.retrieveMemberById(target).queue(cible -> {
             String chname = "ban-" + cible.getEffectiveName().toLowerCase().replaceAll(" ","-");
             chname = chname.replaceAll("[^a-zA-Z0-9-]", "");
+            assert banrole != null;
             server.removeRoleFromMember(cible, banrole).queue();
             for (TextChannel channel : bancategory.getTextChannels()) {
                 if (channel.getName().equalsIgnoreCase(chname)) {
@@ -94,8 +108,14 @@ public class Moderation {
                 dm.sendMessage("Votre banissement a pris fin, vous pouvez dès à présent revenir sur la cité.").queue();
                 dm.sendMessage("IP du serveur: mc.cite-balkoura.fr").queue();
                 sendLogDiscord("UnBan",cible,modo,null,raison);
-                if (Main.profilHashMap.get(cible.getIdLong()).getTeam()>0) server.addRoleToMember(cible, validrole).queue();
-                if (Main.profilHashMap.get(cible.getIdLong()).getTeam()==0) server.addRoleToMember(cible, teamrole).queue();
+                if (Main.profilHashMap.get(cible.getIdLong()).getTeam()>0) {
+                    assert validrole != null;
+                    server.addRoleToMember(cible, validrole).queue();
+                }
+                if (Main.profilHashMap.get(cible.getIdLong()).getTeam()==0) {
+                    assert teamrole != null;
+                    server.addRoleToMember(cible, teamrole).queue();
+                }
             });
         });
     }
@@ -104,7 +124,9 @@ public class Moderation {
      *      Log de mute
      */
     public void mute(String target, String modo, String duree, String raison) {
+        assert server != null;
         server.retrieveMemberById(target).queue(cible -> {
+            assert muterole != null;
             server.addRoleToMember(cible, muterole).queue();
             sendLogDiscord("Mute",cible, modo,duree,raison);
         });
@@ -114,7 +136,9 @@ public class Moderation {
      *      Log d'unmute
      */
     public void unmute(String target, String modo, String raison) {
+        assert server != null;
         server.retrieveMemberById(target).queue(cible -> {
+            assert muterole != null;
             server.removeRoleFromMember(cible, muterole).queue();
             cible.getUser().openPrivateChannel().queue(dm -> {
                 dm.sendMessage("Votre banissement a pris fin, vous pouvez dès à présent revenir sur la cité.");
@@ -124,11 +148,21 @@ public class Moderation {
     }
 
     /**
+     *      Log d'un kick
+     */
+    public void kick(String target, String modo, String raison) {
+        assert server != null;
+        server.retrieveMemberById(target).queue(cible -> {
+            sendLogDiscord("Kick",cible, modo,null,raison);
+        });
+    }
+
+    /**
      *      Envoi d'un Log sur le cannal de log
      */
     private void sendLogDiscord(String sanction, Member cible, String mods, String duree, String raison){
-        String modo;
         if (!mods.equalsIgnoreCase("console")) {
+            assert server != null;
             server.retrieveMemberById(mods).queue(member ->
                     createLog(sanction, cible, member.getAsMention(), duree, raison));
         } else {

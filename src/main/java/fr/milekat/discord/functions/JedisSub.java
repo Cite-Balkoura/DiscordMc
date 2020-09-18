@@ -56,6 +56,8 @@ public class JedisSub extends JedisPubSub {
                         moderation.mute(msg[2],msg[3],msg[4],msg[5]);
                     } else if (msg[1].equalsIgnoreCase("unmute")){
                         moderation.unmute(msg[2],msg[3],msg[4]);
+                    } else if (msg[1].equalsIgnoreCase("kick")) {
+                        moderation.kick(msg[2], msg[3], msg[4]);
                     }
                     break;
                 }
