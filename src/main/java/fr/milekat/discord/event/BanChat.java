@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class BanChat extends ListenerAdapter {
     private final JDA api = Main.getBot();
     private final Category bancategorie = api.getCategoryById(554104234442883094L);
-    private final TextChannel logbanchannel = api.getTextChannelById(756658558778736661L);
+    private final TextChannel logbanchannel = api.getTextChannelById(756683301212913699L);
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
