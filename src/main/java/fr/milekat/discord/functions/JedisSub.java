@@ -45,20 +45,7 @@ public class JedisSub extends JedisPubSub {
                 }
                 case "log_sanction":
                 {
-                    Moderation moderation = new Moderation();
-                    if (msg[1].equalsIgnoreCase("repport")) {
-                        moderation.report(msg[2],msg[3],msg[4]);
-                    } else if (msg[1].equalsIgnoreCase("ban")) {
-                        moderation.ban(msg[2],msg[3],msg[4],msg[5]);
-                    } else if (msg[1].equalsIgnoreCase("unban")) {
-                        moderation.unban(msg[2],msg[3],msg[4]);
-                    } else if (msg[1].equalsIgnoreCase("mute")){
-                        moderation.mute(msg[2],msg[3],msg[4],msg[5]);
-                    } else if (msg[1].equalsIgnoreCase("unmute")){
-                        moderation.unmute(msg[2],msg[3],msg[4]);
-                    } else if (msg[1].equalsIgnoreCase("kick")) {
-                        moderation.kick(msg[2], msg[3], msg[4]);
-                    }
+                    if (msg.length==7) new Moderation().newSanction(msg[1],msg[2],msg[3],msg[4],msg[5],msg[6]);
                     break;
                 }
                 case "sqlbackup_done":

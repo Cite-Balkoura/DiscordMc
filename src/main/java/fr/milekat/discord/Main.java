@@ -4,6 +4,7 @@ import fr.milekat.discord.engines.Backup;
 import fr.milekat.discord.engines.PlayersEngine;
 import fr.milekat.discord.engines.SQLPingLoad;
 import fr.milekat.discord.engines.TeamsEngine;
+import fr.milekat.discord.event.BanChat;
 import fr.milekat.discord.event.Bot_Chat;
 import fr.milekat.discord.event.Inscription;
 import fr.milekat.discord.functions.Console;
@@ -110,6 +111,7 @@ public class Main {
         // Event
         api.addEventListener(new Bot_Chat());
         api.addEventListener(new Inscription());
+        api.addEventListener(new BanChat());
         // Chargement de la console
         new Thread("Console") {
             @Override
