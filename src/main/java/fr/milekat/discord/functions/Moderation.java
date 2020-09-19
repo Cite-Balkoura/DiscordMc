@@ -76,6 +76,7 @@ public class Moderation {
         if (banrole==null || server==null || bancategory==null || teamrole==null || validrole==null) return;
         TextChannel newBanChannel = null;
         String chname = "ban-" + target.getEffectiveName().toLowerCase().replaceAll(" ","-");
+        chname = chname.replaceAll("[^a-zA-Z0-9-]", "");
         for (TextChannel loopchannel : bancategory.getTextChannels()) {
             if (loopchannel.getName().equalsIgnoreCase(chname)) {
                 newBanChannel = loopchannel;
@@ -98,19 +99,19 @@ public class Moderation {
     private void setBanchannel(TextChannel banchannel, Member target, Member modo, String duree, String expiration, String raison) {
         try {
             banchannel.getPermissionOverrides().clear();
-        } catch (UnsupportedOperationException ignored) {}
-        if (bancategory == null) return;
-        banchannel.getManager().sync(bancategory).queue();
-        banchannel.getManager().setTopic("Canal privé suite au bannissement de " + target.getEffectiveName() +
-                ", par " + modo.getEffectiveName()).queue();
-        banchannel.createPermissionOverride(target).clear().setAllow(Permission.VIEW_CHANNEL).queue();
-        banchannel.sendMessage("Bonjour " + target.getAsMention() + " ! Tu as été banni(e) par: " + modo.getAsMention() +
-                "." + "Tu peux essayer de t'expliquer avec le staff." + System.lineSeparator() +
-                "Si tu quittes ce discord, tu seras banni(e) automatiquement, à vie. Cette conversation est sauvegardée."
-                + System.lineSeparator() + System.lineSeparator() +
-                "**Raison:** " + raison + System.lineSeparator() +
-                "**Durée:** " + duree + System.lineSeparator() +
-                "**Expire:** " + expiration).queue();
+            if (bancategory == null) return;
+            banchannel.getManager().sync(bancategory).queue();
+            banchannel.createPermissionOverride(target).clear().setAllow(Permission.VIEW_CHANNEL).queue();
+        } catch (UnsupportedOperationException | IllegalStateException ignored) {}
+            banchannel.getManager().setTopic("Canal privé suite au bannissement de " + target.getEffectiveName() +
+                    ", par " + modo.getEffectiveName()).queue();
+            banchannel.sendMessage("Bonjour " + target.getAsMention() + " ! Tu as été banni(e) par: " + modo.getAsMention() +
+                    "." + "Tu peux essayer de t'expliquer avec le staff." + System.lineSeparator() +
+                    "Si tu quittes ce discord, tu seras banni(e) automatiquement, à vie. Cette conversation est sauvegardée."
+                    + System.lineSeparator() + System.lineSeparator() +
+                    "**Raison:** " + raison + System.lineSeparator() +
+                    "**Durée:** " + duree + System.lineSeparator() +
+                    "**Expire:** " + expiration).queue();
     }
 
     /**
@@ -121,10 +122,9 @@ public class Moderation {
         String chname = "ban-" + target.getEffectiveName().toLowerCase().replaceAll(" ","-");
         chname = chname.replaceAll("[^a-zA-Z0-9-]", "");
         server.removeRoleFromMember(target, banrole).queue();
-        for (TextChannel channel : bancategory.getTextChannels()) {
-            if (channel.getName().equalsIgnoreCase(chname)) {
-                channel.delete().queue();
-                break;
+        for (TextChannel loopchannel : bancategory.getTextChannels()) {
+            if (loopchannel.getName().equalsIgnoreCase(chname)) {
+                loopchannel.delete().queue();
             }
         }
         target.getUser().openPrivateChannel().queue(dm -> {
