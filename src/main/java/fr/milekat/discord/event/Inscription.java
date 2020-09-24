@@ -9,10 +9,8 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.api.exceptions.ContextException;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.requests.RestAction;
 
 import java.awt.*;
 import java.sql.Connection;
@@ -285,7 +283,7 @@ public class Inscription extends ListenerAdapter {
             } else if (Main.profilHashMap.containsKey(user.getIdLong()) && Main.profilHashMap.get(user.getIdLong()).getTeam()==0) {
                 // Récupération commande
                 String[] message = event.getMessage().getContentRaw().split(" ");
-                if (message.length != 3) {
+                if (message[0].equalsIgnoreCase("team") && message.length != 3) {
                     event.getChannel().sendMessage("Merci d'utiliser team create <nom de team> pour créer une" +
                             " nouvelle équipe, et la rejoindre.").queue();
                     debug("[" + user.getAsTag() + "] commande création team erreur.");

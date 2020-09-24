@@ -7,6 +7,7 @@ import fr.milekat.discord.utils.DateMilekat;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -20,13 +21,14 @@ import static fr.milekat.discord.Main.*;
 
 public class BotChat extends ListenerAdapter {
     private final JDA api = Main.getBot();
+    private final Role staff = api.getRoleById(554092424167817235L);
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getMessage().getAuthor().isBot()) return;
         if (!Main.profilHashMap.containsKey(event.getAuthor().getIdLong())) return;
-        if (event.getChannel().equals(chatchannel)){
-            if (!event.getMessage().getAuthor().isBot()){
+        if (event.getChannel().equals(chatchannel)) {
+            if (!event.getAuthor().isBot()) {
                 event.getMessage().delete().queue();
                 UUID uuid = Main.profilHashMap.get(event.getAuthor().getIdLong()).getUuid();
                 if (Main.profilHashMap.get(event.getAuthor().getIdLong()).isMute()) {
@@ -46,7 +48,11 @@ public class BotChat extends ListenerAdapter {
                 // Envoi REDIS
                 JedisPub.sendRedis("new_msg#:#" + id);
             }
-        } if (event.getChannel().getType().equals(ChannelType.PRIVATE)) {
+        } else if (event.getChannel().getIdLong()==754764155508228277L) {
+            if (!event.getAuthor().isBot()) {
+                event.getMessage().delete().queue();
+            }
+        } else if (event.getChannel().getType().equals(ChannelType.PRIVATE)) {
             // Récupération commande
             String[] message = event.getMessage().getContentRaw().split(" ");
             if (message[0].equalsIgnoreCase("msg") && message.length < 3) {
