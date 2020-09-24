@@ -58,14 +58,14 @@ public class Main {
         log("Backups activés '/backup' pour désactiver");
         commandes.add("team");
         commandes.add("msg");
+        // Discord
+        api = JDABuilder.createDefault("NDg3MjcxODM0ODMyNzMyMTYx.XpcgLg.SmzvIo3KZhK4xCZhawYX8HPVr3o").build().awaitReady();
+        api.getPresence().setPresence(OnlineStatus.ONLINE,Activity.watching("web.cite-balkoura.fr"));
         Main.chatchannel = api.getTextChannelById(554088761584123905L);
         if (new Date().getTime() >
                 new GregorianCalendar(2020, Calendar.NOVEMBER,24,14,0).getTimeInMillis()) {
             Main.chatchannel = api.getTextChannelById(754764155508228277L);
         }
-        // Discord
-        api = JDABuilder.createDefault("NDg3MjcxODM0ODMyNzMyMTYx.XpcgLg.SmzvIo3KZhK4xCZhawYX8HPVr3o").build().awaitReady();
-        api.getPresence().setPresence(OnlineStatus.ONLINE,Activity.watching("web.cite-balkoura.fr"));
         // SQL
         sql = new MariaManage("jdbc:mysql://",
                 "149.91.80.146",
