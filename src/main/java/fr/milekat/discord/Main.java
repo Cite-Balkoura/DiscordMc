@@ -5,7 +5,7 @@ import fr.milekat.discord.engines.PlayersEngine;
 import fr.milekat.discord.engines.SQLPingLoad;
 import fr.milekat.discord.engines.TeamsEngine;
 import fr.milekat.discord.event.BanChat;
-import fr.milekat.discord.event.Bot_Chat;
+import fr.milekat.discord.event.BotChat;
 import fr.milekat.discord.event.Inscription;
 import fr.milekat.discord.functions.Console;
 import fr.milekat.discord.functions.JedisSub;
@@ -17,18 +17,17 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import redis.clients.jedis.Jedis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.UUID;
+import java.util.*;
 
 public class Main {
     private static MariaManage sql;
     private static JDA api;
 
+    /* Core */
     public static HashMap<Long, Profil> profilHashMap = new HashMap<>();
     public static HashMap<UUID, User> uuidUserHashMap = new HashMap<>();
     public static HashMap<Integer, Team> teams = new HashMap<>();
@@ -40,6 +39,8 @@ public class Main {
     public static HashMap<User, String> regmotivations = new HashMap<>();
     //  Empêche la lecture des msg de l'utilisateur (le temps que le bot parle)
     public static ArrayList<User> waitbot = new ArrayList<>();
+
+    public static TextChannel chatchannel;
 
     public static boolean debugMode;
     public static boolean enableBackups;
@@ -57,6 +58,11 @@ public class Main {
         log("Backups activés '/backup' pour désactiver");
         commandes.add("team");
         commandes.add("msg");
+        Main.chatchannel = api.getTextChannelById(554088761584123905L);
+        if (new Date().getTime() >
+                new GregorianCalendar(2020, Calendar.NOVEMBER,24,14,0).getTimeInMillis()) {
+            Main.chatchannel = api.getTextChannelById(754764155508228277L);
+        }
         // Discord
         api = JDABuilder.createDefault("NDg3MjcxODM0ODMyNzMyMTYx.XpcgLg.SmzvIo3KZhK4xCZhawYX8HPVr3o").build().awaitReady();
         api.getPresence().setPresence(OnlineStatus.ONLINE,Activity.watching("web.cite-balkoura.fr"));
@@ -109,7 +115,7 @@ public class Main {
             }
         }.start();
         // Event
-        api.addEventListener(new Bot_Chat());
+        api.addEventListener(new BotChat());
         api.addEventListener(new Inscription());
         api.addEventListener(new BanChat());
         // Chargement de la console

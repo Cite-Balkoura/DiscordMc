@@ -18,9 +18,8 @@ import java.util.UUID;
 
 import static fr.milekat.discord.Main.*;
 
-public class Bot_Chat extends ListenerAdapter {
+public class BotChat extends ListenerAdapter {
     private final JDA api = Main.getBot();
-    private final TextChannel chatchannel = api.getTextChannelById(554088761584123905L);
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {

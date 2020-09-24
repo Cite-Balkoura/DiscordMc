@@ -1,6 +1,6 @@
 package fr.milekat.discord.functions;
 
-import fr.milekat.discord.event.Bot_Chat;
+import fr.milekat.discord.event.BotChat;
 import redis.clients.jedis.JedisPubSub;
 import java.sql.SQLException;
 import static fr.milekat.discord.Main.log;
@@ -11,7 +11,7 @@ public class JedisSub extends JedisPubSub {
     public void onMessage(String channel, String message) {
         if (!channel.equalsIgnoreCase("discord")) {
             String[] msg = message.split("#:#");
-            Bot_Chat bot_chat = new Bot_Chat();
+            BotChat bot_chat = new BotChat();
             log("SUB:{"+channel+"},MSG:{"+message+"}");
             switch (msg[0].toLowerCase()) {
                 case "new_msg":
