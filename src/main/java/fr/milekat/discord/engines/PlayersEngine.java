@@ -48,37 +48,45 @@ public class PlayersEngine extends TimerTask {
                                 discordid);
                 Main.profilHashMap.put(discordid, profil);
                 assert server != null;
+                assert muterole != null;
+                assert banrole != null;
+                assert teamrole != null;
+                assert validrole != null;
                 server.retrieveMemberById(q.getResultSet().getLong("discord_id")).queue(member -> {
                     try {
                         List<Role> roles = member.getRoles();
-                        Main.uuidUserHashMap.put(uuid,member.getUser());
+                        Main.uuidUserHashMap.put(uuid, member.getUser());
                         // Check Mute
                         if (profil.isMute()) {
                             if (!roles.contains(muterole)) {
-                                server.addRoleToMember(member,muterole).queue();
+                                server.addRoleToMember(member, muterole).queue();
                             }
                         } else {
                             if (roles.contains(muterole)) {
-                                server.removeRoleFromMember(member,muterole).queue();
+                                server.removeRoleFromMember(member, muterole).queue();
                             }
                         }
                         // Check Ban
                         if (profil.isBan()) {
-                            if (!roles.contains(banrole)) server.addRoleToMember(member,banrole).queue();
-                            if (roles.contains(teamrole)) server.removeRoleFromMember(member,teamrole).queue();
-                            if (roles.contains(validrole)) server.removeRoleFromMember(member,validrole).queue();
+                            if (!roles.contains(banrole)) server.addRoleToMember(member, banrole).queue();
+                            if (roles.contains(teamrole)) server.removeRoleFromMember(member, teamrole).queue();
+                            if (roles.contains(validrole)) server.removeRoleFromMember(member, validrole).queue();
                         } else {
-                            if (roles.contains(banrole)) server.removeRoleFromMember(member,banrole).queue();
-                            if (profil.getTeam()>0 && !roles.contains(validrole)) server.addRoleToMember(member, validrole).queue();
-                            if (profil.getTeam()>0 && roles.contains(teamrole)) server.removeRoleFromMember(member, teamrole).queue();
-                            if (profil.getTeam()==0 && !roles.contains(teamrole)) server.addRoleToMember(member, teamrole).queue();
-                            if (profil.getTeam()==0 && roles.contains(validrole)) server.removeRoleFromMember(member, validrole).queue();
+                            if (roles.contains(banrole)) server.removeRoleFromMember(member, banrole).queue();
+                            if (profil.getTeam() > 0 && !roles.contains(validrole))
+                                server.addRoleToMember(member, validrole).queue();
+                            if (profil.getTeam() > 0 && roles.contains(teamrole))
+                                server.removeRoleFromMember(member, teamrole).queue();
+                            if (profil.getTeam() == 0 && !roles.contains(teamrole))
+                                server.addRoleToMember(member, teamrole).queue();
+                            if (profil.getTeam() == 0 && roles.contains(validrole))
+                                server.removeRoleFromMember(member, validrole).queue();
                         }
                         if (!member.getEffectiveName().equalsIgnoreCase(profil.getName())) {
                             member.modifyNickname(profil.getName()).queue();
                         }
-                    } catch (HierarchyException ignored) {}
-                });
+                    } catch (HierarchyException ignore) {}
+                }, ignore -> {/* Si le member est introuvable ou autre on ignore ! */});
             }
             q.close();
         } catch (SQLException throwables) {
