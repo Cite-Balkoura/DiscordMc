@@ -1,9 +1,6 @@
 package fr.milekat.discord;
 
-import fr.milekat.discord.engines.Backup;
-import fr.milekat.discord.engines.PlayersEngine;
-import fr.milekat.discord.engines.SQLPingLoad;
-import fr.milekat.discord.engines.TeamsEngine;
+import fr.milekat.discord.engines.*;
 import fr.milekat.discord.event.BanChat;
 import fr.milekat.discord.event.BotChat;
 import fr.milekat.discord.event.Inscription;
@@ -112,6 +109,13 @@ public class Main {
             public void run() {
                 Timer backuptimer = new Timer();
                 backuptimer.schedule(new Backup(),300000,7200000);
+            }
+        }.start();
+        new Thread("InscriptionsCount-Engine") {
+            @Override
+            public void run() {
+                Timer inscriptionsCount = new Timer();
+                inscriptionsCount.schedule(new InscriptionsCount(),300000,600000);
             }
         }.start();
         // Event
