@@ -22,7 +22,7 @@ public class InscriptionsCount extends TimerTask {
             q.execute();
             q.getResultSet().last();
             assert channel != null;
-            channel.getManager().setName("Inscrits cité:" + q.getResultSet().getString("player_count")).queue();
+            channel.getManager().setName("Inscrits cité " + q.getResultSet().getString("player_count")).queue();
             q.close();
         } catch (SQLException throwables) {
             Main.log("Impossible d'update le channel des inscrits!");
