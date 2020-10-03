@@ -17,12 +17,12 @@ public class InscriptionsCount extends TimerTask {
     public void run() {
         Connection connection = Main.getSqlConnect().getConnection();
         try {
-            PreparedStatement q = connection.prepareStatement("SELECT COUNT(`player_id`) FROM `balkoura_player` " +
-                    "WHERE `team_id` <> 1;");
+            PreparedStatement q = connection.prepareStatement("SELECT COUNT(`player_id`) as player_count" +
+                    " FROM `balkoura_player` WHERE `team_id` <> 1;");
             q.execute();
             q.getResultSet().last();
             assert channel != null;
-            channel.getManager().setName("Validé cité " + q.getResultSet().getString("player_count")).queue();
+            channel.getManager().setName("Validés cité " + q.getResultSet().getString("player_count")).queue();
             q.close();
         } catch (SQLException throwables) {
             Main.log("Impossible d'update le channel des inscrits!");
