@@ -52,7 +52,7 @@ public class Main {
         debugMode = true;
         log("Débugs activés '/debug' pour désactiver");
         enableBackups = true;
-        log("Backups activés '/backup' pour désactiver");
+        log("Backups activés '/backups' pour désactiver");
         commandes.add("team");
         commandes.add("msg");
         // Discord
