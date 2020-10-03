@@ -21,8 +21,9 @@ public class InscriptionsCount extends TimerTask {
                     " FROM `balkoura_player` WHERE `team_id` <> 1;");
             q.execute();
             q.getResultSet().last();
-            assert channel != null;
-            channel.getManager().setName("Validés cité " + q.getResultSet().getString("player_count")).queue();
+            if (channel!=null) channel.getManager()
+                    .setName(q.getResultSet().getString("player_count") + " participants validés")
+                    .queue();
             q.close();
         } catch (SQLException throwables) {
             Main.log("Impossible d'update le channel des inscrits!");
