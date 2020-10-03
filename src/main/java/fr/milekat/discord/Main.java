@@ -115,7 +115,7 @@ public class Main {
             @Override
             public void run() {
                 Timer inscriptionsCount = new Timer();
-                inscriptionsCount.schedule(new InscriptionsCount(),300000,600000);
+                inscriptionsCount.schedule(new InscriptionsCount(),0,60000);
             }
         }.start();
         // Event
