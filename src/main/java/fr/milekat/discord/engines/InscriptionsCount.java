@@ -11,7 +11,7 @@ import java.util.TimerTask;
 
 public class InscriptionsCount extends TimerTask {
     private final JDA api = Main.getBot();
-    private final VoiceChannel channel = api.getVoiceChannelById(761247631950610473L);;
+    private final VoiceChannel channel = api.getVoiceChannelById(761247631950610473L);
 
     @Override
     public void run() {
