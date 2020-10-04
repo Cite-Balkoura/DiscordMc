@@ -7,10 +7,7 @@ public class JedisPub {
      *      Envoi d'un message sur le Redis
      * @param msg message à envoyer
      */
-    public static void sendRedis(String msg){/*
-        Jedis jedis = new Jedis("149.91.80.146", 6379);
-        jedis.auth("aucyLUYyXkD67XPNFEdjpXfhBgqHvWLs9vn4vudytUSGPKZsvt");*/
+    public static void sendRedis(String msg){
         jedisPub.publish("discord", msg);
-        /*jedis.quit();*/
     }
 }

@@ -16,13 +16,17 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import redis.clients.jedis.Jedis;
 
+import java.io.FileReader;
 import java.util.*;
 
 public class Main {
     private static MariaManage sql;
     private static JDA api;
+    private static JSONObject jsonO;
 
     /* Core */
     public static HashMap<Long, Profil> profilHashMap = new HashMap<>();
@@ -55,8 +59,11 @@ public class Main {
         log("Backups activés '/backups' pour désactiver");
         commandes.add("team");
         commandes.add("msg");
+        // JSON
+        JSONParser jsonP = new JSONParser();
+        jsonO = (JSONObject) jsonP.parse(new FileReader("config.json"));
         // Discord
-        api = JDABuilder.createDefault("NDg3MjcxODM0ODMyNzMyMTYx.XpcgLg.SmzvIo3KZhK4xCZhawYX8HPVr3o").build().awaitReady();
+        api = JDABuilder.createDefault((String) getConfig().get("bot_token")).build().awaitReady();
         api.getPresence().setPresence(OnlineStatus.ONLINE,Activity.watching("web.cite-balkoura.fr"));
         Main.chatchannel = api.getTextChannelById(554088761584123905L);
         if (new Date().getTime() >
@@ -64,17 +71,19 @@ public class Main {
             Main.chatchannel = api.getTextChannelById(754764155508228277L);
         }
         // SQL
-        sql = new MariaManage("jdbc:mysql://",
-                "149.91.80.146",
-                "minecraft",
-                "minecraft",
-                "aucyLUYyXkD67XPNFEdjpXfhBgqHvWLs9vn4vudytUSGPKZsvt");
+        JSONObject sqlconfig = (JSONObject) getConfig().get("SQL");
+                sql = new MariaManage("jdbc:mysql://",
+                (String) sqlconfig.get("host"),
+                (String) sqlconfig.get("db"),
+                (String) sqlconfig.get("user"),
+                (String) sqlconfig.get("mdp"));
         sql.connection();
         // Jedis
-        jedisPub = new Jedis("149.91.80.146",6379,0);
-        jedisPub.auth("aucyLUYyXkD67XPNFEdjpXfhBgqHvWLs9vn4vudytUSGPKZsvt");
-        jedisSub = new Jedis("149.91.80.146",6379,0);
-        jedisSub.auth("aucyLUYyXkD67XPNFEdjpXfhBgqHvWLs9vn4vudytUSGPKZsvt");
+        JSONObject redisconfig = (JSONObject) getConfig().get("redis");
+        jedisPub = new Jedis((String) redisconfig.get("host"),6379,0);
+        jedisPub.auth((String) redisconfig.get("auth"));
+        jedisSub = new Jedis((String) redisconfig.get("host"),6379,0);
+        jedisSub.auth((String) redisconfig.get("auth"));
         subscriber = new JedisSub();
         new Thread("Redis-Discord-Sub") {
             @Override
@@ -134,6 +143,10 @@ public class Main {
         for (Profil profil : Main.profilHashMap.values()) {
             Main.log(profil.getDiscordid() + "");
         }
+    }
+
+    public static JSONObject getConfig(){
+        return jsonO;
     }
 
     public static MariaManage getSqlConnect(){

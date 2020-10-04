@@ -152,7 +152,7 @@ public class Moderation {
         if (muterole == null || server == null) return;
         server.removeRoleFromMember(target, muterole).queue();
         target.getUser().openPrivateChannel().queue(dm -> {
-            dm.sendMessage("Votre banissement a pris fin, vous pouvez dès à présent revenir sur la cité.");
+            dm.sendMessage("Votre banissement a pris fin, vous pouvez dès à présent revenir sur la cité.").queue();
             sendLogDiscord("UnMute",target, modo,null,null,raison);
         });
     }
