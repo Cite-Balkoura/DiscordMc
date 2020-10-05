@@ -320,7 +320,7 @@ public class Inscription extends ListenerAdapter {
                                 "jouer le classement Solo, soit inviter d'autres membres sans équipe pour jouer le " +
                                 "classement Duo/Trio ou Équipe (6 maxi).").queue();
                         channel.sendMessage("Ton grade sera mis à jour d'ici quelques instants.").queue();
-                        log("[" + user.getAsTag() + "] créé l'équipe" + message[2]);
+                        log("[" + user.getAsTag() + "] créé l'équipe '" + message[2] + "'");
                     } else {
                         channel.sendMessage("Désolé, cette équipe, n'est pas disponible.").queue();
                         debug("[" + user.getAsTag() + "] a tenté de créé l'équipe " + message[2] + " mais elle existe déjà.");
@@ -341,10 +341,10 @@ public class Inscription extends ListenerAdapter {
                     !message[1].equalsIgnoreCase("invite")){
                 return;
             }
+            event.getMessage().delete().queue();
             if (Main.teams.get(Main.profilHashMap.get(user.getIdLong()).getTeam()).getSize()>5) {
                 api.openPrivateChannelById(member.getId()).queue(dm->
                         dm.sendMessage("Désolé, ton équipe est pleine tu ne peux plus inviter de membres.").queue());
-                event.getMessage().delete().queue();
                 return;
             }
             Member target = event.getMessage().getMentionedMembers().get(0);
@@ -371,10 +371,8 @@ public class Inscription extends ListenerAdapter {
             } else {
                 api.openPrivateChannelById(member.getId()).queue(dm->
                         dm.sendMessage("Joueur introuvable / ne recherche pas d'équipe.").queue());
-                event.getMessage().delete().queue();
                 debug("[" + user.getAsTag() + "] invite x mais il ne cherche pas d'équipe.");
             }
-            event.getMessage().delete().queue();
         }
     }
 
