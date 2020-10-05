@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.awt.*;
@@ -34,18 +33,18 @@ public class Inscription extends ListenerAdapter {
     @Override
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
         api.retrieveUserById(event.getUserIdLong()).queue(user -> {
-            if (user==null || user.isBot() || server==null) return;
+            if (user==null || user.isBot() || server==null || accueil==null) return;
             if (!Main.profilHashMap.containsKey(user.getIdLong())) {
                 if (event.getMessageIdLong() == reactmsgid) {
                     if (!Main.regEnCours.contains(user)) {
                         if (event.getReactionEmote().getAsCodepoints().equalsIgnoreCase("U+2705")) {
-                            try {
-                                user.openPrivateChannel().queue(dm -> {
-                                    Main.waitbot.add(user);
-                                    Main.regEnCours.add(user);
-                                    Main.registerstep.put(user, 0);
-                                    log("L'utilisateur: " + user.getAsTag() + " débute l'inscription");
-                                    dm.sendMessage("Bonjour, merci d'avoir accepté notre règlement.").queue();
+                            /*try {*/
+                            user.openPrivateChannel().queue(dm -> {
+                                Main.waitbot.add(user);
+                                Main.regEnCours.add(user);
+                                Main.registerstep.put(user, 0);
+                                log("L'utilisateur: " + user.getAsTag() + " débute l'inscription");
+                                dm.sendMessage("Bonjour, merci d'avoir accepté notre règlement.").queue(success -> {
                                     dm.sendTyping().queue();
                                     sleep(2000);
                                     dm.sendMessage("Voici le formulaire à suivre pour soumettre ton inscription:").queue();
@@ -56,17 +55,30 @@ public class Inscription extends ListenerAdapter {
                                     Main.registerstep.put(user, 1);
                                     Main.waitbot.remove(user);
                                     debug("[" + user.getAsTag() + "] En attente du pseudo..");
+                                },throwable -> {
+                                    log("[" + user.getAsTag() + "] semble ne pas autoriser les MP.");
+                                    accueil.sendMessage(user.getAsMention() + "Je ne parviens pas à t'envoyer de MP.").queue();
+                                    accueil.sendMessage("Tu bloque probablement les messages privés, envois moi un MP.").queue();
                                 });
-                            } catch (ErrorResponseException ignore) {
+                            }, throwable -> {
+                                log("[" + user.getAsTag() + "] impossible d'ouvrir les MP: " + throwable.getMessage());
+                                if (debugMode) throwable.printStackTrace();
+                            });
+                            /*} catch (ErrorResponseException ignore) {
                                 log("[" + user.getAsTag() + "] semble ne pas autoriser les MP.");
-                                assert accueil != null;
                                 accueil.sendMessage(user.getAsMention() + "Je ne parviens pas à t'envoyer de MP.").queue();
                                 accueil.sendMessage("Tu bloque probablement les messages privés, envois moi un MP.").queue();
-                            }
+                            }*/
                         }
-                    } else {
-                        user.openPrivateChannel().queue(dm -> dm.sendMessage("Tu es déjà en cours d'incription..").queue());
-                    }
+                    } else user.openPrivateChannel().queue(dm -> dm.sendMessage("Tu es déjà en cours d'incription..")
+                            .queue(null, throwable -> {
+                        log("[" + user.getAsTag() + "] semble ne pas autoriser les MP.");
+                        accueil.sendMessage(user.getAsMention() + "Je ne parviens pas à t'envoyer de MP.").queue();
+                        accueil.sendMessage("Tu bloque probablement les messages privés, envois moi un MP.").queue();
+                    }), throwable -> {
+                        log("[" + user.getAsTag() + "] impossible d'ouvrir les MP: " + throwable.getMessage());
+                        if (debugMode) throwable.printStackTrace();
+                    });
                 } else if (event.getChannel().getType().equals(ChannelType.PRIVATE)) {
                     PrivateChannel dm = event.getPrivateChannel();
                     Main.waitbot.add(user);
@@ -403,8 +415,7 @@ public class Inscription extends ListenerAdapter {
         EmbedBuilder validation = new EmbedBuilder();
         validation.setTitle("Nouvelle candidature de")
                 .setDescription(member.getAsMention())
-                .addField("Pseudo Minecraft actuel",
-                        MojangNames.getName(Main.reguuid.get(user).toString()), false)
+                .addField("Pseudo Minecraft actuel", MojangNames.getName(Main.reguuid.get(user).toString()), false)
                 .addField("Motivations pour la cité", Main.regmotivations.get(user), false)
                 .addField("UUID", Main.reguuid.get(user).toString(), false)
                 .setColor(Color.YELLOW)
