@@ -72,7 +72,7 @@ public class Main {
         }
         // SQL
         JSONObject sqlconfig = (JSONObject) getConfig().get("SQL");
-                sql = new MariaManage("jdbc:mysql://",
+        sql = new MariaManage("jdbc:mysql://",
                 (String) sqlconfig.get("host"),
                 (String) sqlconfig.get("db"),
                 (String) sqlconfig.get("user"),
