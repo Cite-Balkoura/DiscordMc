@@ -203,7 +203,7 @@ public class Moderation {
             PreparedStatement q = connection.prepareStatement("INSERT INTO `balkoura_sanction`" +
                     "(`player_id`, `sanction_date`, `cmd`, `sanction_type`, `send_by`, `sanction_reason`) VALUES " +
                     "(COALESCE((SELECT `player_id` FROM `balkoura_player` WHERE `discord_id` = '" + target.getId() + "'),'??'),?,?,?," +
-                    "COALESCE((SELECT `player_id` FROM `balkoura_player` WHERE `discord_id` = '" + modo.getId() + "'),'Console'),?);");
+                    "COALESCE((SELECT `player_id` FROM `balkoura_player` WHERE `discord_id` = '" + modo.getId() + "'),'0'),?);");
             q.setString(1, DateMilekat.setDateNow());
             q.setString(2, cmd);
             q.setInt(3, sanction);
