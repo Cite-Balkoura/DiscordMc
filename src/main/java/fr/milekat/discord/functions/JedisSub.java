@@ -45,7 +45,7 @@ public class JedisSub extends JedisPubSub {
                 }
                 case "log_sanction":
                 {
-                    if (msg.length==7) new Moderation().newSanction(msg[1],msg[2],msg[3],msg[4],msg[5],msg[6]);
+                    if (msg.length==8) new Moderation().newSanction(msg[1],msg[2],msg[3],msg[4],msg[5],msg[6], msg[7]);
                     break;
                 }
                 case "sqlbackup_done":
