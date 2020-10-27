@@ -50,7 +50,7 @@ public class JedisSub extends JedisPubSub {
                 }
                 case "sqlbackup_done":
                 {
-                    if (msg.length==2) new SendNewSQLBackup(msg[1]);
+                    if (msg.length==2) SendFileToDiscord.sendNewSQLBackup(msg[1]);
                 }
             }
         } else {

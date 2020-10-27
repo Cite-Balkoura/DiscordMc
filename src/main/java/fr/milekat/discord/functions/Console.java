@@ -15,11 +15,24 @@ public class Console {
                     debug();
                 } else if (input.equalsIgnoreCase("backups")) {
                     backups();
+                } else if (input.equalsIgnoreCase("savefile")) {
+                    backups();
                 } else {
                     Main.log("Commande inconnue");
+                    sendHelp();
                 }
             }
         }
+    }
+
+    /**
+     *      Liste des commandes dispo pour la console du bot
+     */
+    private void sendHelp() {
+        Main.log("debug: Active/Désactive le débug.");
+        Main.log("backups: Active/Désactive les backups auto.");
+        Main.log("savefile <path>: Save un dossier complet en zip envoyé sur Discord.");
+        Main.log("stop: Stop le bot !");
     }
 
     private void debug() {
