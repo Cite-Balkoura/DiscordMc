@@ -72,10 +72,10 @@ public class Inscription extends ListenerAdapter {
                         }
                     } else user.openPrivateChannel().queue(dm -> dm.sendMessage("Tu es déjà en cours d'incription..")
                             .queue(null, throwable -> {
-                        log("[" + user.getAsTag() + "] semble ne pas autoriser les MP.");
-                        accueil.sendMessage(user.getAsMention() + "Je ne parviens pas à t'envoyer de MP.").queue();
-                        accueil.sendMessage("Tu bloque probablement les messages privés, envois moi un MP.").queue();
-                    }), throwable -> {
+                                log("[" + user.getAsTag() + "] semble ne pas autoriser les MP.");
+                                accueil.sendMessage(user.getAsMention() + "Je ne parviens pas à t'envoyer de MP.").queue();
+                                accueil.sendMessage("Tu bloque probablement les messages privés, envois moi un MP.").queue();
+                            }), throwable -> {
                         log("[" + user.getAsTag() + "] impossible d'ouvrir les MP: " + throwable.getMessage());
                         if (debugMode) throwable.printStackTrace();
                     });
@@ -173,16 +173,13 @@ public class Inscription extends ListenerAdapter {
                                 q.setString(3, embed.getFields().get(0).getValue());
                                 q.execute();
                                 q.close();
-                                Main.profilHashMap.put(member.getIdLong(), new Profil(uuid,
+                                Main.profilHashMap.put(member.getIdLong(), new Profil(
+                                        uuid,
                                         MojangNames.getName(uuid.toString()),
-                                        0,
                                         0,
                                         "pas mute",
                                         "pas ban",
                                         null,
-                                        false,
-                                        0,
-                                        false,
                                         member.getIdLong()));
                                 Main.uuidUserHashMap.put(uuid,member.getUser());
                                 assert teamrole != null;

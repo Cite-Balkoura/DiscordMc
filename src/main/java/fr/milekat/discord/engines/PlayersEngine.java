@@ -27,25 +27,22 @@ public class PlayersEngine extends TimerTask {
         Connection connection = Main.getSqlConnect().getConnection();
         try {
             PreparedStatement q = connection.prepareStatement("SELECT `uuid`, `name`, `team_id`, " +
-                    "`chat_mode`, `muted`, `banned`, `reason`, `modson`, `player_pts_event`, `maintenance`, " +
-                    "`discord_id` FROM `" + Main.SQLPREFIX + "player` WHERE `name` != 'Annonce';");
+                    "`chat_mode`, `muted`, `banned`, `reason`,  `discord_id` FROM `" + Main.SQLPREFIX +
+                    "player` WHERE `name` != 'Annonce';");
             q.execute();
             Main.profilHashMap.clear();
             Main.uuidUserHashMap.clear();
             while (q.getResultSet().next()){
-                 UUID uuid = UUID.fromString(q.getResultSet().getString("uuid"));
-                 long discordid = q.getResultSet().getLong("discord_id");
-                 Profil profil = new Profil(uuid,
-                                q.getResultSet().getString("name"),
-                                q.getResultSet().getInt("team_id"),
-                                q.getResultSet().getInt("chat_mode"),
-                                q.getResultSet().getString("muted"),
-                                q.getResultSet().getString("banned"),
-                                q.getResultSet().getString("reason"),
-                                q.getResultSet().getBoolean("modson"),
-                                q.getResultSet().getInt("player_pts_event"),
-                                q.getResultSet().getBoolean("maintenance"),
-                                discordid);
+                UUID uuid = UUID.fromString(q.getResultSet().getString("uuid"));
+                long discordid = q.getResultSet().getLong("discord_id");
+                Profil profil = new Profil(
+                        uuid,
+                        q.getResultSet().getString("name"),
+                        q.getResultSet().getInt("team_id"),
+                        q.getResultSet().getString("muted"),
+                        q.getResultSet().getString("banned"),
+                        q.getResultSet().getString("reason"),
+                        discordid);
                 Main.profilHashMap.put(discordid, profil);
                 assert server != null;
                 assert muterole != null;
