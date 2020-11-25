@@ -67,7 +67,7 @@ public class Main {
         api.getPresence().setPresence(OnlineStatus.ONLINE,Activity.watching("web.cite-balkoura.fr"));
         Main.chatchannel = api.getTextChannelById(554088761584123905L);
         if (new Date().getTime() >
-                new GregorianCalendar(2020, Calendar.NOVEMBER,24,14,0).getTimeInMillis()) {
+                new GregorianCalendar(2020, Calendar.DECEMBER,19,14,0).getTimeInMillis()) {
             Main.chatchannel = api.getTextChannelById(754764155508228277L);
         }
         // SQL
