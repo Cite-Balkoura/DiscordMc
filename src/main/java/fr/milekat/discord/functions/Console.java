@@ -13,6 +13,8 @@ public class Console {
                     Main.stopSequence();
                 } else if (input.equalsIgnoreCase("debug")) {
                     debug();
+                } else if (input.equalsIgnoreCase("jedis")) {
+                    jedis();
                 } else if (input.equalsIgnoreCase("backups")) {
                     backups();
                 } else if (input.equalsIgnoreCase("savefile")) {
@@ -38,6 +40,11 @@ public class Console {
     private void debug() {
         Main.debugMode = !Main.debugMode;
         Main.log("Mode débug: " + Main.debugMode + ".");
+    }
+
+    private void jedis() {
+        Main.jedisDebug = !Main.jedisDebug;
+        Main.log("Mode débug jedis: " + Main.jedisDebug + ".");
     }
 
     private void backups() {

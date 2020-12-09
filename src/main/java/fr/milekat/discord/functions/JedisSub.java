@@ -1,9 +1,10 @@
 package fr.milekat.discord.functions;
 
+import fr.milekat.discord.Main;
 import fr.milekat.discord.event.BotChat;
 import redis.clients.jedis.JedisPubSub;
+
 import java.sql.SQLException;
-import static fr.milekat.discord.Main.log;
 
 public class JedisSub extends JedisPubSub {
 
@@ -12,7 +13,7 @@ public class JedisSub extends JedisPubSub {
         if (!channel.equalsIgnoreCase("discord")) {
             String[] msg = message.split("#:#");
             BotChat bot_chat = new BotChat();
-            log("SUB:{"+channel+"},MSG:{"+message+"}");
+            if (Main.jedisDebug) Main.log("SUB:{"+channel+"},MSG:{"+message+"}");
             switch (msg[0].toLowerCase()) {
                 case "new_msg":
                 {
@@ -28,7 +29,7 @@ public class JedisSub extends JedisPubSub {
                     try {
                         bot_chat.sendDiscordPrivate(Integer.parseInt(msg[1]));
                     } catch (SQLException e) {
-                        log("Erreur dans l'envoi du message: " + e);
+                        Main.log("Erreur dans l'envoi du message: " + e);
                         e.printStackTrace();
                     }
                     break;
@@ -54,17 +55,17 @@ public class JedisSub extends JedisPubSub {
                 }
             }
         } else {
-            log("PUB:{"+message+"}");
+            if (Main.jedisDebug) Main.log("PUB:{"+message+"}");
         }
     }
 
     @Override
     public void onSubscribe(String channel, int subscribedChannels) {
-        log("Redis connecté à " + channel);
+        Main.log("Redis connecté à " + channel);
     }
 
     @Override
     public void onUnsubscribe(String channel, int subscribedChannels) {
-        log("Redis déconnecté de " + channel);
+        Main.log("Redis déconnecté de " + channel);
     }
 }

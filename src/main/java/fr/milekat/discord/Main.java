@@ -21,6 +21,9 @@ import org.json.simple.parser.JSONParser;
 import redis.clients.jedis.Jedis;
 
 import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 public class Main {
@@ -44,6 +47,7 @@ public class Main {
     public static TextChannel chatchannel;
 
     public static boolean debugMode;
+    public static boolean jedisDebug;
     public static boolean enableBackups;
 
     public static ArrayList<String> commandes = new ArrayList<>();
@@ -89,7 +93,8 @@ public class Main {
             @Override
             public void run() {
                 try {
-                    jedisSub.subscribe(subscriber,"backup", "discord", "cite", "event", "survie", "bungee");
+                    if (jedisDebug) log("Load Jedis channels");
+                    jedisSub.subscribe(subscriber, getJedisChannels());
                 } catch (Exception e) {
                     log("Subscribing failed." + e);
                     e.printStackTrace();
@@ -179,5 +184,20 @@ public class Main {
         api.getPresence().setStatus(OnlineStatus.OFFLINE);
         log("Good bye!");
         System.exit(0);
+    }
+
+    private static String[] getJedisChannels() {
+        try {
+            Connection connection = sql.getConnection();
+            PreparedStatement q = connection.prepareStatement("SELECT * FROM `balkoura_redis_channels`");
+            q.execute();
+            ArrayList<String> jedisChannels = new ArrayList<>();
+            while (q.getResultSet().next()) jedisChannels.add(q.getResultSet().getString("channel"));
+            jedisChannels.add("backup");
+            return jedisChannels.toArray(new String[0]);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
     }
 }
